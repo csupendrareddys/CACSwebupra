@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>UI Bars & Elements — UPRA</title>
+  <link rel="stylesheet" href="styles/style.css">
+</head>
+<body>
+  <div class="utility-bar">
+    <div class="container utility-inner">
+      <div class="utility-actions">
+        <a class="partner-link" href="#">Partner Login</a>
+      </div>
+    </div>
+  </div>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="brand">
+        <img src="assets/logo.svg" alt="UPRA logo" class="logo">
+        <span class="site-name">UPRA</span>
+      </div>
+
+      <button class="nav-toggle" aria-expanded="false" aria-label="Toggle navigation">☰</button>
+
+      <nav class="main-nav" id="main-nav">
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="#">Startup</a></li>
+          <li><a href="#">Registrations</a></li>
+          <li><a href="#">GST</a></li>
+          <li><a href="#">Income Tax</a></li>
+          <li><a href="#">MCA</a></li>
+          <li><a href="#">Compliances</a></li>
+          <li><a href="#">Global</a></li>
+          <li><a href="bars.html" aria-current="page">UI Bars</a></li>
+        </ul>
+      </nav>
+
+      <div class="auth-actions">
+        <a class="btn login" href="#">Login</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="doc">
+      <h1>UI Bars & Naming Conventions</h1>
+      <p>This page lists common "bars" and related UI elements, with their definition, typical placement and examples. The last column suggests the typical HTML element or UI name you may use when building the layout (for accessibility and semantics).</p>
+
+      <div class="table-wrap">
+        <table class="doc-table">
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th>Bar Name</th>
+              <th>Definition / Purpose</th>
+              <th>Typical Position</th>
+              <th>Real-World Example</th>
+              <th>HTML / UI Element</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Navigation</td>
+              <td>Top Navbar</td>
+              <td>Primary site navigation containing logo and main links.</td>
+              <td>Top of Page</td>
+              <td>Website Header (Home, About, Contact)</td>
+              <td>&lt;nav&gt; (inside &lt;header&gt;)</td>
+            </tr>
+            <tr>
+              <td>Navigation</td>
+              <td>Bottom Tab Bar</td>
+              <td>Mobile app navigation for switching main views.</td>
+              <td>Bottom of Screen</td>
+              <td>Instagram or Spotify mobile app</td>
+              <td>&lt;nav role="tablist"&gt; / footer nav</td>
+            </tr>
+            <tr>
+              <td>Navigation</td>
+              <td>Sidebar</td>
+              <td>Vertical navigation for complex hierarchies.</td>
+              <td>Left or Right Edge</td>
+              <td>Admin Dashboards, Slack, Gmail</td>
+              <td>&lt;aside&gt; or &lt;nav&gt; (vertical)</td>
+            </tr>
+            <tr>
+              <td>Navigation</td>
+              <td>Breadcrumb Bar</td>
+              <td>Shows user location in site hierarchy.</td>
+              <td>Top Left (below nav)</td>
+              <td>Home &gt; Men &gt; Shoes &gt; Running</td>
+              <td>&lt;nav aria-label="breadcrumb"&gt;</td>
+            </tr>
+            <tr>
+              <td>Navigation</td>
+              <td>Mega Menu</td>
+              <td>Expandable panel showing many options/columns.</td>
+              <td>Drops down from Top</td>
+              <td>Amazon or Best Buy categories</td>
+              <td>&lt;nav&gt; + &lt;div class="mega-menu"&gt;</td>
+            </tr>
+            <tr>
+              <td>Utility</td>
+              <td>Utility Bar</td>
+              <td>Secondary links (login, language, support).</td>
+              <td>Very Top (above nav)</td>
+              <td>Sign In / language strip</td>
+              <td>&lt;div class="utility-bar"&gt; (or &lt;nav&gt;)</td>
+            </tr>
+            <tr>
+              <td>Utility</td>
+              <td>Status Bar</td>
+              <td>OS-level bar showing time, battery, and signal.</td>
+              <td>Extreme Top (Mobile)</td>
+              <td>iPhone/Android status strip</td>
+              <td>OS / Browser UI (not an HTML element)</td>
+            </tr>
+            <tr>
+              <td>Utility</td>
+              <td>Toolbar</td>
+              <td>Collection of edit/action tools.</td>
+              <td>Top of Editor</td>
+              <td>MS Word Ribbon, Photoshop Tools</td>
+              <td>&lt;div role="toolbar" class="toolbar"&gt;</td>
+            </tr>
+            <tr>
+              <td>Utility</td>
+              <td>App Bar</td>
+              <td>Android specific top bar for titles and actions.</td>
+              <td>Top of App Screen</td>
+              <td>Android Action Bar</td>
+              <td>&lt;header role="banner" class="app-bar"&gt;</td>
+            </tr>
+            <tr>
+              <td>Utility</td>
+              <td>Address Bar</td>
+              <td>Browser input for URLs.</td>
+              <td>Top of Browser</td>
+              <td>Chrome / Safari URL field</td>
+              <td>Browser UI (not an HTML element)</td>
+            </tr>
+            <tr>
+              <td>Feedback</td>
+              <td>Snackbar</td>
+              <td>Temporary message with a single action.</td>
+              <td>Bottom Center / Left</td>
+              <td>Message Sent [UNDO]</td>
+              <td>&lt;div class="snackbar" role="status"&gt;</td>
+            </tr>
+            <tr>
+              <td>Feedback</td>
+              <td>Toast Bar</td>
+              <td>Simple feedback message that disappears automatically.</td>
+              <td>Top Right / Bottom</td>
+              <td>Login Successful popup</td>
+              <td>&lt;div class="toast" role="status"&gt;</td>
+            </tr>
+            <tr>
+              <td>Feedback</td>
+              <td>Notification Banner</td>
+              <td>Persistent bar for announcements or alerts.</td>
+              <td>Top of Page</td>
+              <td>Free Shipping or Server Maintenance</td>
+              <td>&lt;div class="notification" role="region"&gt;</td>
+            </tr>
+            <tr>
+              <td>Feedback</td>
+              <td>Progress Bar</td>
+              <td>Visual track indicating task completion status.</td>
+              <td>Middle or Top</td>
+              <td>File download or setup wizard</td>
+              <td>&lt;progress&gt; element or &lt;div role="progressbar"&gt;</td>
+            </tr>
+            <tr>
+              <td>Input</td>
+              <td>Search Bar</td>
+              <td>Input field for search queries.</td>
+              <td>Header or Center</td>
+              <td>Google Homepage, Header Search</td>
+              <td>&lt;form&gt; + &lt;input type="search"&gt;</td>
+            </tr>
+            <tr>
+              <td>Input</td>
+              <td>Seek Bar</td>
+              <td>Timeline scrubber for media.</td>
+              <td>Bottom of Video</td>
+              <td>YouTube video timeline</td>
+              <td>&lt;input type="range" class="seek-bar"&gt;</td>
+            </tr>
+            <tr>
+              <td>Input</td>
+              <td>Slider Bar</td>
+              <td>Range selector for settings.</td>
+              <td>Settings Menu</td>
+              <td>Volume, Brightness, Price Range</td>
+              <td>&lt;input type="range"&gt;</td>
+            </tr>
+            <tr>
+              <td>Input</td>
+              <td>Scrollbar</td>
+              <td>Navigation tool to view hidden content.</td>
+              <td>Right/Bottom Edge</td>
+              <td>Browser window side</td>
+              <td>Browser-native scrollbar / CSS customization</td>
+            </tr>
+            <tr>
+              <td>Legal</td>
+              <td>Footer Bar</td>
+              <td>Catch-all for copyright, sitemap, and policies.</td>
+              <td>Very Bottom</td>
+              <td>Page Copyright © 2024</td>
+              <td>&lt;footer&gt;</td>
+            </tr>
+            <tr>
+              <td>Legal</td>
+              <td>Consent Bar</td>
+              <td>Mandatory notice for cookies/GDPR.</td>
+              <td>Fixed Bottom/Top</td>
+              <td>Accept All Cookies banner</td>
+              <td>&lt;div class="consent-bar" role="dialog"&gt;</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="note">Tip: When in doubt, use semantic elements (&lt;nav&gt;, &lt;header&gt;, &lt;footer&gt;, &lt;aside&gt;) and ARIA attributes (role, aria-label) to make bars accessible.</p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div class="footer-col">
+        <h4>UPRAFilings</h4>
+        <ul>
+          <li><a href="#">About UPRAFilings</a></li>
+          <li><a href="#">Careers</a></li>
+          <li><a href="#">Contact Us</a></li>
+          <li><a href="#">Platforms</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Search</h4>
+        <ul>
+          <li><a href="#">Business Search</a></li>
+          <li><a href="#">Trademark Search</a></li>
+          <li><a href="#">Filings.AE for UAE</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Usage</h4>
+        <ul>
+          <li><a href="#">Terms &amp; Conditions</a></li>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Refund Policy</a></li>
+          <li><a href="#">Legal</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>More</h4>
+        <ul>
+          <li><a href="#">Confidentiality Policy</a></li>
+          <li><a href="#">Disclaimer Policy</a></li>
+          <li><a href="#">UPRAFilings Review</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="container footer-bottom">
+      <small>© UPRA — All rights reserved</small>
+    </div>
+  </footer>
+
+  <script>
+    const toggle = document.querySelector('.nav-toggle');
+    const nav = document.querySelector('.main-nav');
+    toggle.addEventListener('click', () => {
+      const expanded = toggle.getAttribute('aria-expanded') === 'true' || false;
+      toggle.setAttribute('aria-expanded', !expanded);
+      nav.classList.toggle('open');
+    });
+  </script>
+</body>
+</html>

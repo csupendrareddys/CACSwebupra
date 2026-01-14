@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>UPRA — CA & CS Services</title>
+  <link rel="stylesheet" href="styles/style.css">
+</head>
+<body>
+  <div class="utility-bar">
+    <div class="container utility-inner">
+      <div class="utility-actions">
+        <a class="partner-link" href="#">Partner Login</a>
+      </div>
+    </div>
+  </div>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="brand">
+        <img src="assets/logo.svg" alt="UPRA logo" class="logo">
+        <span class="site-name">UPRA</span>
+      </div>
+
+      <button class="nav-toggle" aria-expanded="false" aria-label="Toggle navigation">☰</button>
+
+      <nav class="main-nav" id="main-nav">
+        <ul>
+          <li><a href="#">Startup</a></li>
+          <li><a href="#">Registrations</a></li>
+          <li><a href="#">GST</a></li>
+          <li><a href="#">Income Tax</a></li>
+          <li><a href="#">MCA</a></li>
+          <li><a href="#">Compliances</a></li>
+          <li><a href="#">Global</a></li>
+          <li><a href="bars.html">UI Bars</a></li>
+        </ul>
+      </nav>
+
+      <div class="auth-actions">
+        <a class="btn login" href="#">Login</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero container">
+      <h1>Welcome to UPRA</h1>
+      <p>Your trusted CA & CS partner for Startup, Registrations, GST, Income Tax, MCA & global compliance services.</p>
+      <p class="note">(Links are placeholders — tell me where to point them.)</p>
+    </section>
+
+    <section class="features container">
+      <article>
+        <h2>Startup</h2>
+        <p>Assistance for company formation and registrations.</p>
+      </article>
+      <article>
+        <h2>GST & Tax</h2>
+        <p>End-to-end compliance and filing support.</p>
+      </article>
+      <article>
+        <h2>Partner Program</h2>
+        <p>Partner with us for referrals and mutual growth.</p>
+      </article>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div class="footer-col">
+        <h4>UPRAFilings</h4>
+        <ul>
+          <li><a href="#">About UPRAFilings</a></li>
+          <li><a href="#">Careers</a></li>
+          <li><a href="#">Contact Us</a></li>
+          <li><a href="#">Platforms</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Search</h4>
+        <ul>
+          <li><a href="#">Business Search</a></li>
+          <li><a href="#">Trademark Search</a></li>
+          <li><a href="#">Filings.AE for UAE</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Usage</h4>
+        <ul>
+          <li><a href="#">Terms &amp; Conditions</a></li>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Refund Policy</a></li>
+          <li><a href="#">Legal</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>More</h4>
+        <ul>
+          <li><a href="#">Confidentiality Policy</a></li>
+          <li><a href="#">Disclaimer Policy</a></li>
+          <li><a href="#">UPRAFilings Review</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="container footer-bottom">
+      <small>© UPRA — All rights reserved</small>
+    </div>
+  </footer>
+
+  <script>
+    const toggle = document.querySelector('.nav-toggle');
+    const nav = document.querySelector('.main-nav');
+    toggle.addEventListener('click', () => {
+      const expanded = toggle.getAttribute('aria-expanded') === 'true' || false;
+      toggle.setAttribute('aria-expanded', !expanded);
+      nav.classList.toggle('open');
+    });
+  </script>
+</body>
+</html>
