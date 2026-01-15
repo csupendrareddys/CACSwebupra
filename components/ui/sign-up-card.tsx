@@ -48,10 +48,47 @@ export function Component() {
         mouseY.set(0);
     };
 
-    const handleSubmit = (event: React.MouseEvent) => {
+    const handleSubmit = async (event: React.MouseEvent) => {
         event.preventDefault();
         setIsLoading(true);
-        setTimeout(() => setIsLoading(false), 2000);
+
+        if (password !== confirmPassword) {
+            alert("Passwords do not match!");
+            setIsLoading(false);
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/signup', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    fullName,
+                    email,
+                    password,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                alert("Account created successfully! Data saved to Google Sheet.");
+                // Reset form or redirect
+                setFullName("");
+                setEmail("");
+                setPassword("");
+                setConfirmPassword("");
+            } else {
+                alert(`Error: ${data.error}`);
+            }
+        } catch (error) {
+            console.error("Signup error:", error);
+            alert(`An unexpected error occurred: ${error instanceof Error ? error.message : String(error)}`);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (

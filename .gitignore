@@ -39,3 +39,15 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Secrets and Keys
+database/service_account.json.json
+service_account.json
+sheet_id.txt
+
+# Temporary Scripts
+test_sheets.js
+verify_read.js
+get_sheet_id.py
+# google_sheets_demo.py # Keeping this as it might be useful/requested
+test_output.txt
