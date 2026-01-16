@@ -74,7 +74,7 @@ export function Component() {
             const data = await response.json();
 
             if (response.ok) {
-                alert("Account created successfully! Data saved to Google Sheet.");
+                alert("Account created successfully!");
                 // Reset form or redirect
                 setFullName("");
                 setEmail("");

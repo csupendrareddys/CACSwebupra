@@ -2,32 +2,33 @@ import { NextRequest, NextResponse } from 'next/server';
 
 
 export async function POST(req: NextRequest) {
-    console.log("API: Signup POST received");
+    console.log("API: Partner Signup POST received");
     try {
         const body = await req.json();
         console.log("API: Request body:", body);
-        const { fullName, email, password } = body;
+        const { fullName, phone, email, profession, otherProfession, password } = body;
 
-        if (!fullName || !email || !password) {
+        if (!fullName || !phone || !email || !profession || !password) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
-        // Prepare data for Google Sheet
-        // Assuming columns: Full Name, Email, Password (Plaintext for now as requested/demo), Date
         const newRow = {
             "Full Name": fullName,
+            "Phone": phone,
             "Email": email,
-            "Password": password, // Warning: In production, never store passwords in plaintext!
+            "Profession": profession,
+            "Other Profession": otherProfession || "", // Handle optional
+            "Password": password,
             "Date": new Date().toISOString()
         };
 
-        // await appendUser(newRow); // Google Sheets integration removed
+        // await appendPartner(newRow); // Google Sheets integration removed
         console.log("Would save to sheet:", newRow);
 
-        return NextResponse.json({ message: 'User registered successfully' }, { status: 200 });
+        return NextResponse.json({ message: 'Partner registered successfully' }, { status: 200 });
 
     } catch (error: any) {
-        console.error('CRITICAL ERROR in signup API:', error);
+        console.error('CRITICAL ERROR in partner signup API:', error);
         return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
     }
 }

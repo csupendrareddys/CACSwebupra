@@ -83,15 +83,60 @@ export function Component() {
         mouseY.set(0);
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
-        // Simulate API call
-        console.log(isLogin ? "Logging in..." : "Signing up...", {
-            isLogin,
-            data: isLogin ? { loginEmail, loginPassword } : { fullName, phone, signupEmail, profession, otherProfession, signupPassword }
-        });
-        setTimeout(() => setIsLoading(false), 2000);
+
+        if (isLogin) {
+            // Placeholder for Login
+            alert("Login not implemented yet. Try Signup!");
+            setIsLoading(false);
+            return;
+        }
+
+        if (signupPassword !== confirmPassword) {
+            alert("Passwords do not match!");
+            setIsLoading(false);
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/partner-signup', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    fullName,
+                    phone,
+                    email: signupEmail, 
+                    profession,
+                    otherProfession,
+                    password: signupPassword,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                alert("Partner Account created successfully! Data saved to 'Partners' sheet.");
+                // Reset form or toggle to login
+                setFullName("");
+                setPhone("");
+                setSignupEmail("");
+                setProfession("");
+                setOtherProfession("");
+                setSignupPassword("");
+                setConfirmPassword("");
+            } else {
+                alert(`Error: ${data.error}`);
+            }
+        } catch (error) {
+            console.error("Signup error:", error);
+            alert(`An unexpected error occurred: ${error instanceof Error ? error.message : String(error)}`);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const toggleMode = () => {
