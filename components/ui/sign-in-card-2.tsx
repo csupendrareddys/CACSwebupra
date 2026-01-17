@@ -47,10 +47,33 @@ export function Component() {
         mouseY.set(0);
     };
 
-    const handleSubmit = (event: React.MouseEvent) => {
+    const handleSubmit = async (event: React.MouseEvent) => {
         event.preventDefault();
         setIsLoading(true);
-        setTimeout(() => setIsLoading(false), 2000);
+
+        try {
+            const response = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                localStorage.setItem('currentUser', JSON.stringify(data.user));
+                alert(`Login successful! Welcome ${data.user.name}`);
+                // Use window.location for hard reload ensuring state freshness, or router.push
+                window.location.href = '/dashboard';
+            } else {
+                alert(data.error || 'Login failed');
+            }
+        } catch (error) {
+            console.error('Login error:', error);
+            alert('An unexpected error occurred');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (

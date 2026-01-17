@@ -87,53 +87,40 @@ export function Component() {
         e.preventDefault();
         setIsLoading(true);
 
-        if (isLogin) {
-            // Placeholder for Login
-            alert("Login not implemented yet. Try Signup!");
-            setIsLoading(false);
-            return;
-        }
-
-        if (signupPassword !== confirmPassword) {
+        if (!isLogin && signupPassword !== confirmPassword) {
             alert("Passwords do not match!");
             setIsLoading(false);
             return;
         }
 
+        const endpoint = isLogin ? '/api/partner-login' : '/api/partner-signup';
+        const payload = isLogin
+            ? { email: loginEmail, password: loginPassword }
+            : { fullName, phone, email: signupEmail, profession, otherProfession, password: signupPassword };
+
         try {
-            const response = await fetch('/api/partner-signup', {
+            const response = await fetch(endpoint, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    fullName,
-                    phone,
-                    email: signupEmail, 
-                    profession,
-                    otherProfession,
-                    password: signupPassword,
-                }),
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
             });
 
             const data = await response.json();
 
             if (response.ok) {
-                alert("Partner Account created successfully! Data saved to 'Partners' sheet.");
-                // Reset form or toggle to login
-                setFullName("");
-                setPhone("");
-                setSignupEmail("");
-                setProfession("");
-                setOtherProfession("");
-                setSignupPassword("");
-                setConfirmPassword("");
+                if (isLogin) {
+                    localStorage.setItem('currentUser', JSON.stringify(data.user));
+                    window.location.href = '/dashboard';
+                } else {
+                    alert("Registration successful! Please login.");
+                    toggleMode();
+                }
             } else {
-                alert(`Error: ${data.error}`);
+                alert(data.error || 'Authentication failed');
             }
         } catch (error) {
-            console.error("Signup error:", error);
-            alert(`An unexpected error occurred: ${error instanceof Error ? error.message : String(error)}`);
+            console.error('Partner Auth Error:', error);
+            alert('An unexpected error occurred');
         } finally {
             setIsLoading(false);
         }
