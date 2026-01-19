@@ -16,9 +16,14 @@ export default function DynamicServicePage() {
 
     if (!mounted) return null;
 
+    const handleBook = (data: any) => {
+        console.log('Service booked:', data);
+        // Handle booking logic here
+    };
+
     return (
         <MainLayout user={user}>
-            <ServicePage />
+            <ServicePage onBook={handleBook} />
         </MainLayout>
     );
 }

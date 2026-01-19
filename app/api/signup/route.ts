@@ -39,15 +39,9 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json({ message: 'User registered successfully', userId: info.lastInsertRowid }, { status: 201 });
 
-<<<<<<< HEAD
     } catch (error: unknown) {
         console.error('CRITICAL ERROR in signup API:', error);
         const errorMessage = error instanceof Error ? error.message : 'Internal Server Error';
         return NextResponse.json({ error: errorMessage }, { status: 500 });
-=======
-    } catch (error: any) {
-        console.error('Signup Error:', error);
-        return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
->>>>>>> 3532a83911a9264d85309278bbcbd06497d358f0
     }
 }

@@ -1,39 +1,11 @@
 'use client';
-<<<<<<< HEAD
 
-import React, { useEffect, useState } from 'react';
-import MainLayout from '@/components/layouts/MainLayout';
-import Dashboard from '@/components/pages/Dashboard';
-import { useOrderStore } from '@/store/orderStore';
-import { useRouter } from 'next/navigation';
-
-export default function DashboardPage() {
-    const { user } = useOrderStore();
-    const router = useRouter();
-    const [mounted, setMounted] = useState(false);
-
-    useEffect(() => {
-        setMounted(true);
-        if (mounted && !user) {
-            router.push('/login');
-        }
-    }, [mounted, user, router]);
-
-    if (!mounted) return null;
-
-    if (!user) return null; // Redirecting
-
-    return (
-        <MainLayout user={user}>
-            <Dashboard />
-        </MainLayout>
-=======
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { LogOut, User, Briefcase, Shield, Settings, FileText, Activity, Layers, Users } from 'lucide-react';
 
-// Import Admin Components (dynamic import might be cleaner for bundle size but direct is fine for now)
+// Import Admin Components
 import UserManagement from '@/components/admin/UserManagement';
 import ServiceManagement from '@/components/admin/ServiceManagement';
 
@@ -168,7 +140,7 @@ export default function Dashboard() {
                         {activeTab === 'services' && <ServiceManagement />}
                     </div>
                 ) : (
-                    // Standard User/Partner View (Unchanged Logic basically)
+                    // Standard User/Partner View
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         <DashboardCard
                             title="Profile Settings"
@@ -237,6 +209,5 @@ function DashboardCard({ title, description, icon, delay }: { title: string, des
             <h3 className="text-xl font-semibold text-white mb-2">{title}</h3>
             <p className="text-gray-400 text-sm leading-relaxed">{description}</p>
         </motion.div>
->>>>>>> 3532a83911a9264d85309278bbcbd06497d358f0
     );
 }

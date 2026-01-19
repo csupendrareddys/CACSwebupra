@@ -1,3 +1,4 @@
+'use client';
 
 import React, { useEffect, useState } from 'react';
 import MainLayout from '@/components/layouts/MainLayout';
@@ -18,7 +19,5 @@ export default function Page() {
     <MainLayout user={user}>
       <HomeLanding />
     </MainLayout>
-  );
-}
   );
 }
