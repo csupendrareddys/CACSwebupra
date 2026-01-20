@@ -3,7 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // ============================================
@@ -135,9 +137,24 @@ model DocumentService {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
-  orders Order[]
+  orders       Order[]
+  requirements ServiceRequirement[]
 
   @@map("document_services")
+}
+
+/// Requirements for each Document Service
+model ServiceRequirement {
+  id          String  @id @default(uuid())
+  serviceId   String  @map("service_id")
+  name        String
+  description String?
+  isRequired  Boolean @default(true) @map("is_required")
+  sortOrder   Int     @default(0) @map("sort_order")
+
+  service DocumentService @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@map("service_requirements")
 }
 
 /// Orders linking Customers and Providers with Services

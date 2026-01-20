@@ -1,6 +1,8 @@
 'use client'
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { signIn } from 'next-auth/react';
 import { motion, useMotionValue, useTransform } from 'framer-motion';
 import { Mail, Lock, Eye, EyeClosed, ArrowRight, Loader2 } from 'lucide-react';
 
@@ -23,11 +25,13 @@ function Input({ className, type, ...props }: React.ComponentProps<"input">) {
 }
 
 export function Component() {
+    const router = useRouter();
     const [showPassword, setShowPassword] = useState(false);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [rememberMe, setRememberMe] = useState(false);
+    const [error, setError] = useState("");
 
     // For 3D card effect - increased rotation range for more pronounced 3D effect
     const mouseX = useMotionValue(0);
@@ -47,30 +51,27 @@ export function Component() {
         mouseY.set(0);
     };
 
-    const handleSubmit = async (event: React.MouseEvent) => {
+    const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
         setIsLoading(true);
+        setError("");
 
         try {
-            const response = await fetch('/api/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
+            const result = await signIn("credentials", {
+                email,
+                password,
+                redirect: false,
             });
 
-            const data = await response.json();
-
-            if (response.ok) {
-                localStorage.setItem('currentUser', JSON.stringify(data.user));
-                alert(`Login successful! Welcome ${data.user.name}`);
-                // Use window.location for hard reload ensuring state freshness, or router.push
-                window.location.href = '/dashboard';
+            if (result?.error) {
+                setError("Invalid email or password");
             } else {
-                alert(data.error || 'Login failed');
+                router.push("/dashboard");
+                router.refresh();
             }
-        } catch (error) {
-            console.error('Login error:', error);
-            alert('An unexpected error occurred');
+        } catch (err) {
+            console.error("Login error:", err);
+            setError("An unexpected error occurred");
         } finally {
             setIsLoading(false);
         }
@@ -112,7 +113,12 @@ export function Component() {
                             <p className="text-gray-400 text-sm">Sign in to your account to continue</p>
                         </div>
 
-                        <form className="space-y-6">
+                        <form className="space-y-6" onSubmit={handleSubmit}>
+                            {error && (
+                                <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center">
+                                    {error}
+                                </div>
+                            )}
                             <div className="space-y-2">
                                 <div className="relative group">
                                     <Mail className="absolute left-3 top-2.5 h-5 w-5 text-gray-500 group-focus-within:text-purple-400 transition-colors" />

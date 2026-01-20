@@ -7,46 +7,18 @@ export async function GET(req: NextRequest) {
         const id = searchParams.get('id');
 
         if (id) {
+            // Fetch single service with its requirements from DB
             const service = await prisma.documentService.findUnique({
-                where: { id }
+                where: { id },
+                include: {
+                    requirements: {
+                        orderBy: { sortOrder: 'asc' }
+                    }
+                }
             });
 
             if (!service) {
                 return NextResponse.json({ error: 'Service not found' }, { status: 404 });
-            }
-
-            // Mocking requirements until we have a dedicated table
-            let requiredDocuments: { name: string }[] = [];
-
-            const name = service.documentType || '';
-
-            if (name.includes('Partnership')) {
-                requiredDocuments = [
-                    { name: 'PAN Card of All Partners' },
-                    { name: 'Aadhar Card of All Partners' },
-                    { name: 'Partnership Deed Draft (if available)' },
-                    { name: 'Address Proof of Business' },
-                    { name: 'Passport Size Photos' }
-                ];
-            } else if (name.includes('GST')) {
-                requiredDocuments = [
-                    { name: 'PAN Card' },
-                    { name: 'Aadhar Card' },
-                    { name: 'Bank Account Details' },
-                    { name: 'Address Proof' }
-                ];
-            } else if (name.includes('Company')) {
-                requiredDocuments = [
-                    { name: 'Director ID Proofs' },
-                    { name: 'Address Proof' },
-                    { name: 'DIN (Director Identification Number)' },
-                    { name: 'DSC (Digital Signature Certificate)' }
-                ];
-            } else {
-                requiredDocuments = [
-                    { name: 'Standard ID Proof' },
-                    { name: 'Related Legal Documents' }
-                ];
             }
 
             return NextResponse.json({
@@ -55,11 +27,17 @@ export async function GET(req: NextRequest) {
                     document_type: service.documentType,
                     state: service.state,
                     is_active: service.isActive,
-                    requirements: requiredDocuments
+                    requirements: service.requirements.map(r => ({
+                        id: r.id,
+                        name: r.name,
+                        description: r.description,
+                        isRequired: r.isRequired
+                    }))
                 }
             }, { status: 200 });
         }
 
+        // List all active services
         const services = await prisma.documentService.findMany({
             where: { isActive: true },
             orderBy: { createdAt: 'desc' }
@@ -79,3 +57,4 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: errorMessage }, { status: 500 });
     }
 }
+

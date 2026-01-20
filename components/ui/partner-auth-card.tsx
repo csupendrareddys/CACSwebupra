@@ -1,6 +1,8 @@
 'use client'
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { signIn } from 'next-auth/react';
 import { motion, useMotionValue, useTransform } from 'framer-motion';
 import { Mail, Lock, Eye, EyeClosed, ArrowRight, Loader2, User, Phone, Briefcase } from 'lucide-react';
 import { cn } from "@/lib/utils"
@@ -46,8 +48,10 @@ function Select({ className, ...props }: React.ComponentProps<"select">) {
 }
 
 export function Component() {
+    const router = useRouter();
     const [isLogin, setIsLogin] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState("");
 
     // Login State
     const [loginEmail, setLoginEmail] = useState("");
@@ -86,49 +90,63 @@ export function Component() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
+        setError("");
 
         if (!isLogin && signupPassword !== confirmPassword) {
-            alert("Passwords do not match!");
+            setError("Passwords do not match!");
             setIsLoading(false);
             return;
         }
 
-        const endpoint = isLogin ? '/api/partner-login' : '/api/partner-signup';
-        const payload = isLogin
-            ? { email: loginEmail, password: loginPassword }
-            : { fullName, phone, email: signupEmail, profession, otherProfession, password: signupPassword };
+        if (isLogin) {
+            // Use NextAuth for login
+            try {
+                const result = await signIn("credentials", {
+                    email: loginEmail,
+                    password: loginPassword,
+                    redirect: false,
+                });
 
-        try {
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                if (isLogin) {
-                    localStorage.setItem('currentUser', JSON.stringify(data.user));
-                    window.location.href = '/dashboard';
+                if (result?.error) {
+                    setError("Invalid email or password");
                 } else {
+                    router.push("/dashboard");
+                    router.refresh();
+                }
+            } catch (err) {
+                console.error("Partner login error:", err);
+                setError("An unexpected error occurred");
+            }
+        } else {
+            // Signup still uses the API endpoint
+            try {
+                const response = await fetch('/api/partner-signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ fullName, phone, email: signupEmail, profession, otherProfession, password: signupPassword })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
                     alert("Registration successful! Please login.");
                     toggleMode();
+                } else {
+                    setError(data.error || 'Registration failed');
                 }
-            } else {
-                alert(data.error || 'Authentication failed');
+            } catch (err) {
+                console.error('Partner signup error:', err);
+                setError('An unexpected error occurred');
             }
-        } catch (error) {
-            console.error('Partner Auth Error:', error);
-            alert('An unexpected error occurred');
-        } finally {
-            setIsLoading(false);
         }
+
+        setIsLoading(false);
     };
 
     const toggleMode = () => {
         setIsLogin(!isLogin);
         setIsLoading(false);
+        setError("");
     };
 
     return (
@@ -165,6 +183,11 @@ export function Component() {
                         </div>
 
                         <form className="space-y-4" onSubmit={handleSubmit}>
+                            {error && (
+                                <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center">
+                                    {error}
+                                </div>
+                            )}
                             {!isLogin && (
                                 <>
                                     <div className="space-y-2">

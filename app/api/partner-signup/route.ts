@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 import bcrypt from 'bcryptjs';
 import { Profession } from '@prisma/client';
+import { sendWelcomeEmail } from '@/lib/email';
 
 // Map profession strings to enum
 function mapProfession(profession: string): Profession {
@@ -63,6 +64,9 @@ export async function POST(req: NextRequest) {
             return user;
         });
 
+        // Send welcome email (don't await - fire and forget)
+        sendWelcomeEmail(email, fullName).catch(console.error);
+
         return NextResponse.json({
             message: 'Partner registered successfully',
             userId: result.id
@@ -74,3 +78,4 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: errorMessage }, { status: 500 });
     }
 }
+

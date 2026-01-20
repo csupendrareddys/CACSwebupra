@@ -2,8 +2,9 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { signIn } from 'next-auth/react';
 import { motion } from 'framer-motion';
-import { Shield, Lock, Eye, EyeClosed, ArrowRight, Loader2, Mail } from 'lucide-react';
+import { Shield, Lock, Eye, EyeClosed, Loader2, Mail } from 'lucide-react';
 import { cn } from "@/lib/utils";
 
 function Input({ className, type, ...props }: React.ComponentProps<"input">) {
@@ -28,36 +29,30 @@ export default function AdminLogin() {
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState("");
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
+        setError("");
 
         try {
-            const response = await fetch('/api/login', { // Admin login typically uses same endpoint but checks role
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
+            const result = await signIn("credentials", {
+                email,
+                password,
+                redirect: false,
             });
 
-            const data = await response.json();
-
-            if (response.ok) {
-                // Verify this is an admin
-                if (data.user.role === 'Super_Admin' || data.user.role === 'Sub_Admin') {
-                    // Safe session in localStorage for demo
-                    localStorage.setItem('currentUser', JSON.stringify(data.user));
-                    alert(`Admin Access Granted. Welcome ${data.user.name}`);
-                    router.push('/dashboard');
-                } else {
-                    alert("Access Denied: You do not have administrator privileges.");
-                }
+            if (result?.error) {
+                setError("Invalid credentials or insufficient privileges");
             } else {
-                alert(data.error || 'Login failed');
+                // Successfully authenticated - middleware will handle role-based access
+                router.push("/dashboard");
+                router.refresh();
             }
-        } catch (error) {
-            console.error('Admin Login Error:', error);
-            alert('An unexpected error occurred');
+        } catch (err) {
+            console.error("Admin login error:", err);
+            setError("An unexpected error occurred");
         } finally {
             setIsLoading(false);
         }
@@ -87,6 +82,11 @@ export default function AdminLogin() {
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-4">
+                        {error && (
+                            <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center">
+                                {error}
+                            </div>
+                        )}
                         <div className="space-y-2">
                             <div className="relative group">
                                 <Mail className="absolute left-3 top-2.5 h-5 w-5 text-gray-500 group-focus-within:text-white transition-colors" />

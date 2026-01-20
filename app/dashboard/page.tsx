@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
+import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { LogOut, User, Briefcase, Shield, Settings, FileText, Activity, Layers, Users } from 'lucide-react';
+import { LogOut, User, Briefcase, Shield, Settings, FileText, Activity, Layers, Users, Loader2 } from 'lucide-react';
 
 // Import Admin Components
 import UserManagement from '@/components/admin/UserManagement';
@@ -11,34 +12,32 @@ import ServiceManagement from '@/components/admin/ServiceManagement';
 
 export default function Dashboard() {
     const router = useRouter();
-    const [user, setUser] = useState<any>(null);
-    const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState('overview'); // overview, users, services
+    const { data: session, status } = useSession();
+    const [activeTab, setActiveTab] = React.useState('overview');
 
-    useEffect(() => {
-        const storedUser = localStorage.getItem('currentUser');
-        if (!storedUser) {
-            router.push('/login');
-            return;
-        }
-        try {
-            setUser(JSON.parse(storedUser));
-        } catch (e) {
-            router.push('/login');
-        } finally {
-            setLoading(false);
-        }
-    }, [router]);
-
-    const handleLogout = () => {
-        localStorage.removeItem('currentUser');
+    const handleLogout = async () => {
+        await signOut({ redirect: false });
         router.push('/');
+        router.refresh();
     };
 
-    if (loading) return <div className="min-h-screen bg-black flex items-center justify-center text-white">Loading...</div>;
-    if (!user) return null;
+    // Show loading state while session is being fetched
+    if (status === 'loading') {
+        return (
+            <div className="min-h-screen bg-black flex items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-purple-500" />
+            </div>
+        );
+    }
 
-    const isAdmin = user.role === 'Super_Admin' || user.role === 'Sub_Admin';
+    // Middleware handles redirect, but this is a fallback
+    if (status === 'unauthenticated') {
+        router.push('/login');
+        return null;
+    }
+
+    const user = session?.user;
+    const isAdmin = user?.role === 'ADMIN';
 
     return (
         <div className="min-h-screen bg-black text-gray-100 font-sans selection:bg-purple-500/30">
@@ -57,7 +56,7 @@ export default function Dashboard() {
                         <div className="flex items-center gap-4">
                             <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-sm">
                                 <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                                <span className="text-gray-300">{user.role.replace('_', ' ')}</span>
+                                <span className="text-gray-300">{user?.role || 'User'}</span>
                             </div>
                             <button
                                 onClick={handleLogout}
@@ -78,7 +77,7 @@ export default function Dashboard() {
                 <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-4">
                     <div>
                         <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white via-purple-200 to-purple-400 mb-2">
-                            Welcome back, {user.name}
+                            Welcome back, {user?.name || user?.email}
                         </h1>
                         <p className="text-gray-400">Dashboard</p>
                     </div>
@@ -149,7 +148,7 @@ export default function Dashboard() {
                             delay={0.1}
                         />
 
-                        {user.role === 'Service_reciver' && (
+                        {user?.role === 'CLIENT' && (
                             <>
                                 <DashboardCard
                                     title="My Requests"
@@ -166,7 +165,7 @@ export default function Dashboard() {
                             </>
                         )}
 
-                        {user.role === 'Service_provider' && (
+                        {user?.role === 'PARTNER' && (
                             <>
                                 <DashboardCard
                                     title="Available Jobs"
@@ -182,7 +181,7 @@ export default function Dashboard() {
                                 />
                                 <DashboardCard
                                     title="Verification Status"
-                                    description={`Current Status: ${user.status || 'PENDING'}`}
+                                    description={`Current Status: ${user?.status || 'PENDING'}`}
                                     icon={<Shield className="h-6 w-6 text-yellow-400" />}
                                     delay={0.4}
                                 />
@@ -211,3 +210,4 @@ function DashboardCard({ title, description, icon, delay }: { title: string, des
         </motion.div>
     );
 }
+

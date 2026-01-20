@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
+import { requireAdmin } from '@/lib/auth-helpers';
 
 export async function GET() {
+    // RBAC: Verify admin access
+    const authResult = await requireAdmin();
+    if (!authResult.authorized) {
+        return authResult.response;
+    }
+
     try {
         const services = await prisma.documentService.findMany({
             orderBy: { createdAt: 'desc' }
@@ -23,6 +30,12 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+    // RBAC: Verify admin access
+    const authResult = await requireAdmin();
+    if (!authResult.authorized) {
+        return authResult.response;
+    }
+
     try {
         const body = await req.json();
         const { document_type, state, is_active } = body;
@@ -47,6 +60,12 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+    // RBAC: Verify admin access
+    const authResult = await requireAdmin();
+    if (!authResult.authorized) {
+        return authResult.response;
+    }
+
     try {
         const { searchParams } = new URL(req.url);
         const id = searchParams.get('id');
