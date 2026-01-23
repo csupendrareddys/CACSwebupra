@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import Logo from '../Logo';
+import Logo from '../common/Logo';
 import { Search, User, ChevronDown } from 'lucide-react';
-import MegaMenu from '../MegaMenu';
+import MegaMenu from '../common/MegaMenu';
 import { useRouter } from 'next/navigation';
 import { NAV_MENU } from '../../data/constants';
 

@@ -9,7 +9,13 @@ export async function GET() {
                 serviceProvider: {
                     select: {
                         verificationStatus: true,
-                        profession: true
+                        profession: true,
+                        fullName: true
+                    }
+                },
+                serviceReceiver: {
+                    select: {
+                        fullName: true
                     }
                 }
             },
@@ -24,7 +30,9 @@ export async function GET() {
             role: user.role,
             user_status: user.status,
             verification_status: user.serviceProvider?.verificationStatus,
-            profession: user.serviceProvider?.profession
+            profession: user.serviceProvider?.profession,
+            first_name: user.serviceProvider?.fullName || user.serviceReceiver?.fullName || null,
+            username: user.email.split('@')[0]
         }));
 
         return NextResponse.json({ users: formattedUsers }, { status: 200 });

@@ -20,17 +20,28 @@ export async function POST(req: NextRequest) {
         const body = await req.json();
         const { serviceId, remarks } = body;
 
-        if (!serviceId) {
+        // Check for serviceId OR serviceName
+        if (!serviceId && !body.serviceName) {
             return NextResponse.json(
-                { error: 'Service ID is required' },
+                { error: 'Service ID or Name is required' },
                 { status: 400 }
             );
         }
 
-        // Verify service exists
-        const service = await prisma.documentService.findUnique({
-            where: { id: serviceId }
-        });
+        let service;
+
+        if (serviceId) {
+            // Verify service exists by ID
+            service = await prisma.documentService.findUnique({
+                where: { id: serviceId }
+            });
+        } else if (body.serviceName) {
+            // Find service by name (documentType)
+            // Using findFirst because documentType might not be unique in schema, though logically it should be
+            service = await prisma.documentService.findFirst({
+                where: { documentType: body.serviceName }
+            });
+        }
 
         if (!service || !service.isActive) {
             return NextResponse.json(

@@ -1,9 +1,20 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Check, X, Shield, Lock, AlertTriangle, Loader2 } from 'lucide-react';
+import { Check, Shield, Lock } from 'lucide-react';
+
+interface User {
+    user_id: string;
+    email: string;
+    role: string;
+    user_status: string;
+    verification_status?: string;
+    profession?: string;
+    first_name?: string;
+    username?: string;
+}
 
 export default function UserManagement() {
-    const [users, setUsers] = useState<any[]>([]);
+    const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
 
     const fetchUsers = async () => {
@@ -22,7 +33,7 @@ export default function UserManagement() {
         fetchUsers();
     }, []);
 
-    const handleAction = async (userId: number, action: string) => {
+    const handleAction = async (userId: string, action: string) => {
         if (!confirm('Are you sure you want to perform this action?')) return;
 
         try {
@@ -34,6 +45,7 @@ export default function UserManagement() {
             if (res.ok) fetchUsers();
             else alert('Action failed');
         } catch (error) {
+            console.error('Action failed:', error);
             alert('Error performing action');
         }
     };
@@ -64,8 +76,8 @@ export default function UserManagement() {
                                 </td>
                                 <td className="px-6 py-4">
                                     <span className={`px-2 py-1 rounded-full text-xs border ${user.role === 'Super_Admin' ? 'border-red-500 text-red-400 bg-red-500/10' :
-                                            user.role === 'Service_provider' ? 'border-blue-500 text-blue-400 bg-blue-500/10' :
-                                                'border-gray-500 text-gray-400 bg-gray-500/10'
+                                        user.role === 'Service_provider' ? 'border-blue-500 text-blue-400 bg-blue-500/10' :
+                                            'border-gray-500 text-gray-400 bg-gray-500/10'
                                         }`}>
                                         {user.role}
                                     </span>

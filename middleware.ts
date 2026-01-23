@@ -1,13 +1,20 @@
-import { authMiddleware } from "./auth.config";
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
-// Export the edge-compatible auth middleware
-// Route protection logic is handled in auth.config.ts authorized callback
-export default authMiddleware;
+export function middleware(request: NextRequest) {
+    const sessionToken = request.cookies.get('session_token')?.value;
+    const { pathname } = request.nextUrl;
+
+    // Protected Routes
+    if (pathname.startsWith('/dashboard') || pathname.startsWith('/admin')) {
+        if (!sessionToken) {
+            return NextResponse.redirect(new URL('/login', request.url));
+        }
+    }
+
+    return NextResponse.next();
+}
 
 export const config = {
-    matcher: [
-        // Match all routes except static files and API routes
-        "/((?!api|_next/static|_next/image|favicon.ico|public).*)",
-    ],
+    matcher: ['/dashboard/:path*', '/admin/:path*'],
 };
-

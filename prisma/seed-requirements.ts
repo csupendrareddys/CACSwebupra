@@ -1,15 +1,42 @@
 import prisma from '@/lib/db';
 
 /**
- * Seed script to populate initial ServiceRequirements
- * Run with: npx ts-node prisma/seed-requirements.ts
- * Or: npx tsx prisma/seed-requirements.ts
+ * Seed script to populate initial Services and ServiceRequirements
+ * Run with: npx tsx prisma/seed-requirements.ts
  */
 
-async function seedRequirements() {
-    console.log('Seeding service requirements...');
+const DEFAULT_SERVICES = [
+    { documentType: 'PAN Card Update', state: 'All India' },
+    { documentType: 'Aadhar Card Update', state: 'All India' },
+    { documentType: 'GST Registration', state: 'All India' },
+    { documentType: 'Partnership Deed Registration', state: 'All India' },
+    { documentType: 'Private Limited Company Registration', state: 'All India' },
+    { documentType: 'Trade License', state: 'Maharashtra' },
+    { documentType: 'Rental Agreement', state: 'All India' }
+];
 
-    // Get all services
+async function seedRequirements() {
+    console.log('Seeding services and requirements...');
+
+    // 1. Seed Services
+    for (const serviceData of DEFAULT_SERVICES) {
+        await prisma.documentService.upsert({
+            where: { id: `service-${serviceData.documentType.replace(/\s+/g, '-').toLowerCase()}` },
+            update: {
+                documentType: serviceData.documentType,
+                state: serviceData.state,
+                isActive: true
+            },
+            create: {
+                id: `service-${serviceData.documentType.replace(/\s+/g, '-').toLowerCase()}`,
+                documentType: serviceData.documentType,
+                state: serviceData.state,
+                isActive: true
+            }
+        });
+    }
+
+    // 2. Get all services (now seeded)
     const services = await prisma.documentService.findMany();
 
     for (const service of services) {
@@ -49,7 +76,7 @@ async function seedRequirements() {
         for (let i = 0; i < requirements.length; i++) {
             await prisma.serviceRequirement.upsert({
                 where: {
-                    id: `${service.id}-req-${i}` // Using a deterministic ID for upsert
+                    id: `${service.id}-req-${i}`
                 },
                 update: {
                     name: requirements[i].name,
@@ -70,7 +97,7 @@ async function seedRequirements() {
         console.log(`✓ Seeded ${requirements.length} requirements for: ${service.documentType}`);
     }
 
-    console.log('Done seeding requirements!');
+    console.log('Done seeding services and requirements!');
 }
 
 seedRequirements()
