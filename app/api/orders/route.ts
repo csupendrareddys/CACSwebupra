@@ -3,6 +3,8 @@ import prisma from '@/lib/db';
 import { requireAuth } from '@/lib/auth-helpers';
 import { sendOrderConfirmationEmail } from '@/lib/email';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * POST /api/orders - Create a new order
  * Only authenticated clients can create orders
