@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
         const userId = session.user.id;
 
         const body = await req.json();
-        const { serviceId, remarks } = body;
+        const { serviceId, remarks, voucherCode, discountAmount } = body;
 
         // Check for serviceId OR serviceName
         if (!serviceId && !body.serviceName) {
@@ -74,7 +74,9 @@ export async function POST(req: NextRequest) {
                 customerId: serviceReceiver.id,
                 status: 'CREATED',
                 paymentStatus: 'PENDING',
-                remarksByUser: remarks || null
+                remarksByUser: remarks || null,
+                voucherCode: voucherCode || null,
+                discountAmount: discountAmount || null
             },
             include: {
                 service: true,

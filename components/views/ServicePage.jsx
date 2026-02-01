@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, CheckCircle, Info, ThumbsUp, ThumbsDown, Star, X, Clock } from 'lucide-react';
+import { ArrowLeft, CheckCircle, Info, ThumbsUp, ThumbsDown, Star, X, Clock, Tag, Loader2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -50,6 +50,29 @@ const ServicePage = ({ onBook }) => {
     };
 
     const [isBooking, setIsBooking] = useState(false);
+    const [voucherCode, setVoucherCode] = useState('');
+    const [voucherLoading, setVoucherLoading] = useState(false);
+    const [appliedVoucher, setAppliedVoucher] = useState(null);
+    const [discount, setDiscount] = useState(0);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [checkingAuth, setCheckingAuth] = useState(true);
+
+    // Check authentication on mount
+    React.useEffect(() => {
+        const checkAuth = async () => {
+            try {
+                const res = await fetch('/api/auth/me');
+                if (res.ok) {
+                    setIsAuthenticated(true);
+                }
+            } catch (error) {
+                console.error('Auth check failed:', error);
+            } finally {
+                setCheckingAuth(false);
+            }
+        };
+        checkAuth();
+    }, []);
 
     // Zod Schema
     const bookingSchema = z.object({
@@ -66,6 +89,60 @@ const ServicePage = ({ onBook }) => {
             phone: ''
         }
     });
+
+    // Get base price
+    const getBasePrice = () => {
+        if (content.price) {
+            const parsed = parseInt(content.price.toString().replace(/[^0-9]/g, ''));
+            if (!isNaN(parsed)) return parsed;
+        }
+        return 1000;
+    };
+
+    const basePrice = getBasePrice();
+    const finalPrice = Math.max(0, basePrice - discount);
+
+    // Apply voucher code
+    const applyVoucher = async () => {
+        if (!voucherCode.trim()) {
+            toast.error('Please enter a voucher code');
+            return;
+        }
+
+        setVoucherLoading(true);
+        try {
+            const res = await fetch('/api/vouchers/validate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    code: voucherCode, 
+                    orderAmount: basePrice 
+                })
+            });
+            const data = await res.json();
+
+            if (data.valid) {
+                setAppliedVoucher(data.voucher);
+                setDiscount(data.discount);
+                toast.success(data.message);
+            } else {
+                toast.error(data.error || 'Invalid voucher code');
+                setAppliedVoucher(null);
+                setDiscount(0);
+            }
+        } catch (error) {
+            toast.error('Failed to validate voucher');
+        } finally {
+            setVoucherLoading(false);
+        }
+    };
+
+    // Remove voucher
+    const removeVoucher = () => {
+        setAppliedVoucher(null);
+        setDiscount(0);
+        setVoucherCode('');
+    };
 
     const handlePayment = async (dbOrderId, amount, userDetails) => {
         const isLoaded = await loadRazorpayScript();
@@ -141,9 +218,10 @@ const ServicePage = ({ onBook }) => {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    serviceName: serviceName, // Pass serviceName as we don't have ID handy
+                    serviceName: serviceName,
                     remarks: "New Booking via Web",
-                    // Also pass user details if needed by API, but API gets user from session.
+                    voucherCode: appliedVoucher?.code || null,
+                    discountAmount: discount || null
                 })
             });
 
@@ -153,21 +231,29 @@ const ServicePage = ({ onBook }) => {
                 throw new Error(orderData.error || "Failed to create order");
             }
 
-            // 2. Trigger Razorpay
-            // Extract price from content.price string (e.g. "₹499" -> 499)
-            // Default to 1000 if parsing fails or no price
-            let amount = 1000;
-            if (content.price) {
-                const priceString = content.price.toString();
-                // Remove non-numeric characters except maybe decimal? INT for Razorpay usually.
-                // Assuming price is whole number rupees.
-                const parsed = parseInt(priceString.replace(/[^0-9]/g, ''));
-                if (!isNaN(parsed)) {
-                    amount = parsed;
+            // 2. Trigger Razorpay with discounted price
+            // If finalPrice is 0 (100% discount), skip payment
+            if (finalPrice <= 0) {
+                // Mark as payment completed directly
+                const verifyRes = await fetch('/api/razorpay/verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        dbOrderId: orderData.order.id,
+                        freeOrder: true
+                    }),
+                });
+                const verifyData = await verifyRes.json();
+                if (verifyData.success) {
+                    toast.success('Order placed successfully! (100% discount applied)');
+                    router.push('/dashboard');
+                } else {
+                    toast.error('Order processing failed');
                 }
+                return;
             }
 
-            await handlePayment(orderData.order.id, amount, data);
+            await handlePayment(orderData.order.id, finalPrice, data);
 
         } catch (error) {
             console.error(error);
@@ -222,10 +308,18 @@ const ServicePage = ({ onBook }) => {
 
                         <div className="flex flex-col sm:flex-row gap-4 mb-8">
                             <button
-                                onClick={() => setIsBooking(true)}
-                                className="bg-blue-600 text-white px-8 py-3.5 rounded-lg font-bold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200"
+                                onClick={() => {
+                                    if (!isAuthenticated) {
+                                        toast.error('Please login to book a service');
+                                        router.push('/login');
+                                        return;
+                                    }
+                                    setIsBooking(true);
+                                }}
+                                disabled={checkingAuth}
+                                className="bg-blue-600 text-white px-8 py-3.5 rounded-lg font-bold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200 disabled:opacity-50"
                             >
-                                Book Now
+                                {checkingAuth ? 'Loading...' : 'Book Now'}
                             </button>
                             <div className="flex items-center text-slate-600 px-4">
                                 <Star className="w-5 h-5 text-yellow-400 fill-current mr-2" />
@@ -241,7 +335,31 @@ const ServicePage = ({ onBook }) => {
 
                     <div className="relative">
                         <div className="bg-slate-50 rounded-2xl p-8 border border-gray-100 shadow-xl relative z-10">
-                            {isBooking ? (
+                            {!isAuthenticated && !checkingAuth ? (
+                                <div className="text-center py-6">
+                                    <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                        </svg>
+                                    </div>
+                                    <h3 className="font-bold text-xl mb-2 text-slate-900">Login Required</h3>
+                                    <p className="text-slate-600 mb-6">Please login or signup to book this service</p>
+                                    <div className="flex flex-col gap-3">
+                                        <button 
+                                            onClick={() => router.push('/login')}
+                                            className="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition-colors"
+                                        >
+                                            Login
+                                        </button>
+                                        <button 
+                                            onClick={() => router.push('/signup')}
+                                            className="w-full bg-white text-blue-600 font-bold py-3 rounded-lg border-2 border-blue-600 hover:bg-blue-50 transition-colors"
+                                        >
+                                            Create Account
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : isBooking ? (
                                 <div className="animate-fade-in">
                                     <h3 className="font-bold text-xl mb-4 text-slate-900">Finalize Booking</h3>
                                     <div className="bg-blue-50 p-4 rounded-lg mb-4 text-sm text-blue-800">
@@ -276,12 +394,90 @@ const ServicePage = ({ onBook }) => {
                                             />
                                             {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone.message}</p>}
                                         </div>
+
+                                        {/* Voucher Code Section */}
+                                        <div className="border-t pt-4 mt-4">
+                                            <label className="block text-xs font-bold text-gray-500 mb-1">
+                                                <Tag className="w-3 h-3 inline mr-1" />
+                                                VOUCHER CODE
+                                            </label>
+                                            {appliedVoucher ? (
+                                                <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded p-2">
+                                                    <div className="flex items-center gap-2">
+                                                        <CheckCircle className="w-4 h-4 text-green-600" />
+                                                        <span className="text-green-700 font-medium text-sm">{appliedVoucher.code}</span>
+                                                        <span className="text-green-600 text-xs">
+                                                            ({appliedVoucher.discountType === 'PERCENTAGE' 
+                                                                ? `${appliedVoucher.discountValue}% off` 
+                                                                : `₹${appliedVoucher.discountValue} off`})
+                                                        </span>
+                                                    </div>
+                                                    <button 
+                                                        type="button" 
+                                                        onClick={removeVoucher}
+                                                        className="text-red-500 hover:text-red-700"
+                                                    >
+                                                        <X className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <div className="flex gap-2">
+                                                    <input
+                                                        type="text"
+                                                        value={voucherCode}
+                                                        onChange={(e) => setVoucherCode(e.target.value.toUpperCase())}
+                                                        className="flex-1 p-2 border border-gray-200 rounded text-sm"
+                                                        placeholder="Enter voucher code"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={applyVoucher}
+                                                        disabled={voucherLoading}
+                                                        className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 disabled:opacity-50 flex items-center gap-1"
+                                                    >
+                                                        {voucherLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Apply'}
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Price Breakdown */}
+                                        <div className="bg-slate-100 rounded-lg p-4 space-y-2">
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-gray-600">Service Price</span>
+                                                <span className="font-medium">₹{basePrice.toLocaleString()}</span>
+                                            </div>
+                                            {discount > 0 && (
+                                                <div className="flex justify-between text-sm text-green-600">
+                                                    <span>Discount</span>
+                                                    <span>-₹{discount.toLocaleString()}</span>
+                                                </div>
+                                            )}
+                                            <div className="border-t pt-2 flex justify-between font-bold">
+                                                <span>Total</span>
+                                                <span className="text-lg text-blue-600">
+                                                    {finalPrice <= 0 ? 'FREE' : `₹${finalPrice.toLocaleString()}`}
+                                                </span>
+                                            </div>
+                                        </div>
+
                                         <button disabled={isSubmitting} className="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700 disabled:opacity-70 disabled:cursor-not-allowed">
-                                            {isSubmitting ? 'Processing...' : 'Pay & Submit Order'}
+                                            {isSubmitting ? 'Processing...' : finalPrice <= 0 ? 'Complete Order (Free)' : 'Pay & Submit Order'}
                                         </button>
                                         <button type="button" onClick={() => setIsBooking(false)} className="w-full text-gray-500 text-sm py-2">Cancel</button>
                                     </form>
                                 </div>
+                            ) : isAuthenticated ? (
+                                <>
+                                    <h3 className="font-bold text-xl mb-6">Ready to Book?</h3>
+                                    <p className="text-slate-600 mb-4">Click "Book Now" to proceed with your order.</p>
+                                    <button 
+                                        onClick={() => setIsBooking(true)}
+                                        className="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition-colors"
+                                    >
+                                        Start Booking
+                                    </button>
+                                </>
                             ) : (
                                 <>
                                     <h3 className="font-bold text-xl mb-6">Request a Callback</h3>

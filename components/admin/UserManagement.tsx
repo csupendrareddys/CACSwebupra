@@ -75,8 +75,8 @@ export default function UserManagement() {
                                     <div className="text-xs">{user.email}</div>
                                 </td>
                                 <td className="px-6 py-4">
-                                    <span className={`px-2 py-1 rounded-full text-xs border ${user.role === 'Super_Admin' ? 'border-red-500 text-red-400 bg-red-500/10' :
-                                        user.role === 'Service_provider' ? 'border-blue-500 text-blue-400 bg-blue-500/10' :
+                                    <span className={`px-2 py-1 rounded-full text-xs border ${user.role === 'ADMIN' ? 'border-red-500 text-red-400 bg-red-500/10' :
+                                        user.role === 'PARTNER' ? 'border-blue-500 text-blue-400 bg-blue-500/10' :
                                             'border-gray-500 text-gray-400 bg-gray-500/10'
                                         }`}>
                                         {user.role}
@@ -89,7 +89,7 @@ export default function UserManagement() {
                                     </span>
                                 </td>
                                 <td className="px-6 py-4">
-                                    {user.role === 'Service_provider' ? (
+                                    {user.role === 'PARTNER' ? (
                                         <div className="flex flex-col gap-1">
                                             <span>{user.profession}</span>
                                             <span className={`text-xs ${user.verification_status === 'VERIFIED' ? 'text-green-500' : 'text-yellow-500'
@@ -100,7 +100,7 @@ export default function UserManagement() {
                                     ) : '-'}
                                 </td>
                                 <td className="px-6 py-4 text-right space-x-2">
-                                    {user.role === 'Service_provider' && user.verification_status === 'PENDING' && (
+                                    {user.role === 'PARTNER' && user.verification_status === 'PENDING' && (
                                         <button
                                             onClick={() => handleAction(user.user_id, 'VERIFY_PARTNER')}
                                             className="text-green-400 hover:text-green-300 bg-green-900/20 px-3 py-1 rounded transition-colors"
@@ -109,7 +109,7 @@ export default function UserManagement() {
                                             <Check className="h-4 w-4" />
                                         </button>
                                     )}
-                                    {user.user_status === 'ACTIVE' && user.role !== 'Super_Admin' && (
+                                    {user.user_status === 'ACTIVE' && user.role !== 'ADMIN' && (
                                         <button
                                             onClick={() => handleAction(user.user_id, 'BLOCK_USER')}
                                             className="text-red-400 hover:text-red-300 bg-red-900/20 px-3 py-1 rounded transition-colors"

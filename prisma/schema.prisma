@@ -172,6 +172,8 @@ model Order {
   status        OrderStatus   @default(CREATED)
   paymentStatus PaymentStatus @default(PENDING) @map("payment_status")
   finalPrice    Decimal?      @map("final_price") @db.Decimal(10, 2)
+  discountAmount Decimal?     @map("discount_amount") @db.Decimal(10, 2)
+  voucherCode   String?       @map("voucher_code")
   ratingByUser  Float?        @map("rating_by_user")
   remarksByUser String?       @map("remarks_by_user")
   createdAt     DateTime      @default(now()) @map("created_at")
@@ -182,4 +184,23 @@ model Order {
   provider ServiceProvider? @relation(fields: [providerId], references: [id])
 
   @@map("orders")
+}
+
+/// Voucher/Coupon Codes
+model Voucher {
+  id              String    @id @default(uuid())
+  code            String    @unique
+  discountType    String    @map("discount_type") // 'PERCENTAGE' or 'FIXED'
+  discountValue   Decimal   @map("discount_value") @db.Decimal(10, 2)
+  maxUses         Int?      @map("max_uses")
+  currentUses     Int       @default(0) @map("current_uses")
+  minOrderAmount  Decimal?  @map("min_order_amount") @db.Decimal(10, 2)
+  maxDiscount     Decimal?  @map("max_discount") @db.Decimal(10, 2) // Cap for percentage discounts
+  validFrom       DateTime  @default(now()) @map("valid_from")
+  validUntil      DateTime? @map("valid_until")
+  isActive        Boolean   @default(true) @map("is_active")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@map("vouchers")
 }
