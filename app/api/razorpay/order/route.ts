@@ -2,13 +2,21 @@ import { NextRequest, NextResponse } from 'next/server';
 import Razorpay from 'razorpay';
 import { requireAuth } from '@/lib/auth-helpers';
 
-const razorpay = new Razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID || "",
-    key_secret: process.env.RAZORPAY_KEY_SECRET || "",
-});
-
 export async function POST(req: NextRequest) {
     try {
+        const keyId = process.env.RAZORPAY_KEY_ID;
+        const keySecret = process.env.RAZORPAY_KEY_SECRET;
+
+        if (!keyId || !keySecret) {
+            console.error('Razorpay credentials not configured');
+            return NextResponse.json({ error: 'Payment service not configured' }, { status: 500 });
+        }
+
+        const razorpay = new Razorpay({
+            key_id: keyId,
+            key_secret: keySecret,
+        });
+
         const authResult = await requireAuth();
         if (!authResult.authorized) return authResult.response;
 
